@@ -16,20 +16,22 @@
         .menu-btn { 
             background: transparent; border: 1px solid var(--gray); color: var(--text);
             padding: 15px; margin: 8px; font-size: 1.1rem; border-radius: 8px; width: 220px;
+            cursor: pointer;
         }
         
         /* 模式切換按鈕組 */
         .toggle-group { margin-bottom: 20px; display: flex; gap: 5px; }
         .toggle-btn { 
             background: #111; border: 1px solid var(--gray); color: var(--light-gray);
-            padding: 8px 15px; font-size: 0.9rem; border-radius: 5px;
+            padding: 8px 15px; font-size: 0.9rem; border-radius: 5px; cursor: pointer;
         }
         .toggle-btn.selected { border-color: var(--accent); color: var(--accent); background: #002200; }
 
         /* 返回按鈕 (極簡) */
-        #back-btn { 
+        .back-btn { 
             position: fixed; top: 20px; left: 20px; font-size: 0.9rem; color: var(--gray); 
             background: none; border: 1px solid var(--gray); padding: 5px 12px; border-radius: 4px; z-index: 10;
+            cursor: pointer;
         }
 
         /* 測驗區 */
@@ -42,6 +44,17 @@
         .hint-text { position: fixed; bottom: 30px; font-size: 0.8rem; color: #222; }
         .shake { animation: shake 0.2s; color: red !important; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+
+        /* 自選畫面樣式 (新增) */
+        .select-container { max-height: 60vh; overflow-y: auto; width: 90%; max-width: 400px; margin-bottom: 20px; padding-right: 5px; }
+        .row-title { color: var(--light-gray); font-size: 0.9rem; margin: 15px 0 5px 0; text-align: left; letter-spacing: 1px;}
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .checkbox-btn {
+            background: #111; border: 1px solid var(--gray); color: var(--text); padding: 10px 5px;
+            font-size: 0.9rem; border-radius: 5px; cursor: pointer; user-select: none;
+        }
+        .checkbox-btn.checked { border-color: var(--accent); color: var(--accent); background: #002200; }
+        .action-btn { background: var(--accent); color: #000; border: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -56,10 +69,26 @@
 
         <button class="menu-btn" onclick="startQuiz('hira')">平假名單字 (500)</button>
         <button class="menu-btn" onclick="startQuiz('kata')">片假名單字 (500)</button>
+        <button class="menu-btn" style="border-color: var(--accent); color: var(--accent);" onclick="openSelectScreen()">自選五十音模式</button>
+    </div>
+
+    <div id="select-screen" class="screen">
+        <button class="back-btn" onclick="goHomeFromSelect()">BACK</button>
+        <h1 style="margin-top: 40px; margin-bottom: 10px;">選擇練習範圍</h1>
+        
+        <div class="select-container">
+            <div class="row-title">平假名 (ひらがな)</div>
+            <div class="grid" id="hira-grid"></div>
+            
+            <div class="row-title">片假名 (カタカナ)</div>
+            <div class="grid" id="kata-grid"></div>
+        </div>
+
+        <button class="menu-btn action-btn" onclick="startCustomQuiz()">開始測驗！</button>
     </div>
 
     <div id="quiz-screen" class="screen" onclick="handleScreenClick()">
-        <button id="back-btn" onclick="goHome(event)">BACK</button>
+        <button class="back-btn" onclick="goHome(event)">BACK</button>
         <div id="word">...</div>
         <div id="visual-input"></div>
         <div id="meaning">意思</div>
@@ -76,8 +105,6 @@
             { q: "たべる", a: "taberu", m: "吃" },
             { q: "おはよう", a: "ohayou", m: "早安" },
             { q: "ねこ", a: "neko", m: "貓" }
-
-            // 你可以繼續在這裡手動或用 AI 增加單字
         ],
         kata: [
             { q: "カメラ", a: "kamera", m: "照相機" },
@@ -88,26 +115,135 @@
         ]
     };
 
+    // 新增：基礎五十音單音數據庫 (對應 kana.pro 的群組概念)
+    const kanaGroups = {
+        hira: [
+            { label: "あ行 (a)", items: [{q:"あ",a:"a"},{q:"い",a:"i"},{q:"う",a:"u"},{q:"え",a:"e"},{q:"お",a:"o"}] },
+            { label: "か行 (ka)", items: [{q:"か",a:"ka"},{q:"き",a:"ki"},{q:"く",a:"ku"},{q:"け",a:"ke"},{q:"こ",a:"ko"}] },
+            { label: "さ行 (sa)", items: [{q:"さ",a:"sa"},{q:"し",a:"shi"},{q:"す",a:"su"},{q:"せ",a:"se"},{q:"そ",a:"so"}] },
+            { label: "た行 (ta)", items: [{q:"た",a:"ta"},{q:"ち",a:"chi"},{q:"つ",a:"tsu"},{q:"て",a:"te"},{q:"と",a:"to"}] },
+            { label: "な行 (na)", items: [{q:"な",a:"na"},{q:"に",a:"ni"},{q:"ぬ",a:"nu"},{q:"ね",a:"ne"},{q:"の",a:"no"}] },
+            { label: "は行 (ha)", items: [{q:"は",a:"ha"},{q:"ひ",a:"hi"},{q:"ふ",a:"fu"},{q:"へ",a:"he"},{q:"ほ",a:"ho"}] },
+            { label: "ま行 (ma)", items: [{q:"ま",a:"ma"},{q:"み",a:"mi"},{q:"む",a:"mu"},{q:"め",a:"me"},{q:"も",a:"mo"}] },
+            { label: "や行 (ya)", items: [{q:"や",a:"ya"},{q:"ゆ",a:"yu"},{q:"よ",a:"yo"}] },
+            { label: "ら行 (ra)", items: [{q:"ら",a:"ra"},{q:"り",a:"ri"},{q:"る",a:"ru"},{q:"れ",a:"re"},{q:"ろ",a:"ro"}] },
+            { label: "わ行 (wa)", items: [{q:"わ",a:"wa"},{q:"を",a:"wo"},{q:"ん",a:"n"}] }
+        ],
+        kata: [
+            { label: "ア行 (a)", items: [{q:"ア",a:"a"},{q:"イ",a:"i"},{q:"ウ",a:"u"},{q:"エ",a:"e"},{q:"オ",a:"o"}] },
+            { label: "カ行 (ka)", items: [{q:"カ",a:"ka"},{q:"キ",a:"ki"},{q:"ク",a:"ku"},{q:"ケ",a:"ke"},{q:"コ",a:"ko"}] },
+            { label: "サ行 (sa)", items: [{q:"サ",a:"sa"},{q:"シ",a:"shi"},{q:"ス",a:"su"},{q:"セ",a:"se"},{q:"ソ",a:"so"}] },
+            { label: "タ行 (ta)", items: [{q:"タ",a:"ta"},{q:"チ",a:"chi"},{q:"ツ",a:"tsu"},{q:"テ",a:"te"},{q:"ト",a:"to"}] },
+            { label: "ナ行 (na)", items: [{q:"ナ",a:"na"},{q:"ニ",a:"ni"},{q:"ヌ",a:"nu"},{q:"ネ",a:"ne"},{q:"ノ",a:"no"}] },
+            { label: "ハ行 (ha)", items: [{q:"ハ",a:"ha"},{q:"ヒ",a:"hi"},{q:"フ",a:"fu"},{q:"ヘ",a:"he"},{q:"ホ",a:"ho"}] },
+            { label: "マ行 (ma)", items: [{q:"マ",a:"ma"},{q:"ミ",a:"mi"},{q:"ム",a:"mu"},{q:"メ",a:"me"},{q:"モ",a:"mo"}] },
+            { label: "ヤ行 (ya)", items: [{q:"ヤ",a:"ya"},{q:"ユ",a:"yu"},{q:"ヨ",a:"yo"}] },
+            { label: "ラ行 (ra)", items: [{q:"ラ",a:"ra"},{q:"リ",a:"ri"},{q:"ル",a:"ru"},{q:"レ",a:"re"},{q:"ロ",a:"ro"}] },
+            { label: "ワ行 (wa)", items: [{q:"ワ",a:"wa"},{q:"ヲ",a:"wo"},{q:"ン",a:"n"}] }
+        ]
+    };
+
     let isRandom = true; 
     let currentQuizList = [];
     let currentIdx = 0;
     let isWaiting = false;
+    let selectedGroups = { hira: [], kata: [] }; // 記錄使用者勾選了哪些行
 
     const homeScreen = document.getElementById('home-screen');
+    const selectScreen = document.getElementById('select-screen');
     const quizScreen = document.getElementById('quiz-screen');
     const wordEl = document.getElementById('word');
     const inputEl = document.getElementById('input-field');
     const visualEl = document.getElementById('visual-input');
     const meaningEl = document.getElementById('meaning');
 
-    // 切換隨機/順序
+    // 初始化：動態建立五十音群組按鈕
+    function initSelectScreen() {
+        const hiraGrid = document.getElementById('hira-grid');
+        const kataGrid = document.getElementById('kata-grid');
+        hiraGrid.innerHTML = '';
+        kataGrid.innerHTML = '';
+
+        kanaGroups.hira.forEach((group, index) => {
+            hiraGrid.appendChild(createCheckboxElement('hira', index, group.label));
+        });
+        kanaGroups.kata.forEach((group, index) => {
+            kataGrid.appendChild(createCheckboxElement('kata', index, group.label));
+        });
+    }
+
+    function createCheckboxElement(type, index, label) {
+        const btn = document.createElement('div');
+        btn.className = 'checkbox-btn';
+        btn.innerText = label.split(' ')[0]; // 只顯示「あ行」等字樣簡化版面
+        btn.onclick = () => {
+            const isChecked = btn.classList.toggle('checked');
+            if (isChecked) {
+                selectedGroups[type].push(index);
+            } else {
+                selectedGroups[type] = selectedGroups[type].filter(i => i !== index);
+            }
+        };
+        return btn;
+    }
+
+    // 前往自選畫面
+    function openSelectScreen() {
+        selectedGroups = { hira: [], kata: [] }; // 清空舊選擇
+        initSelectScreen();
+        homeScreen.classList.remove('active');
+        selectScreen.classList.add('active');
+    }
+
+    function goHomeFromSelect() {
+        selectScreen.classList.remove('active');
+        homeScreen.classList.add('active');
+    }
+
+    // 根據勾選組合字庫並開始測驗
+    function startCustomQuiz() {
+        let combinedList = [];
+        
+        // 抓取平假名選中的項目
+        selectedGroups.hira.forEach(idx => {
+            kanaGroups.hira[idx].items.forEach(item => {
+                combinedList.push({ q: item.q, a: item.a, m: "單音" });
+            });
+        });
+
+        // 抓取片假名選中的項目
+        selectedGroups.kata.forEach(idx => {
+            kanaGroups.kata[idx].items.forEach(item => {
+                combinedList.push({ q: item.q, a: item.a, m: "單音" });
+            });
+        });
+
+        if (combinedList.length === 0) {
+            alert("請至少選擇一個行數進行練習！");
+            return;
+        }
+
+        if (isRandom) {
+            combinedList = combinedList.sort(() => Math.random() - 0.5);
+        }
+
+        currentQuizList = combinedList;
+        currentIdx = 0;
+        isWaiting = false;
+
+        selectScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        nextQuestion();
+    }
+
+    // 切換隨機/順序 (保持不變)
     function setOrder(random) {
         isRandom = random;
         document.getElementById('btn-random').classList.toggle('selected', random);
         document.getElementById('btn-order').classList.toggle('selected', !random);
     }
 
-    // 啟動測驗
+    // 啟動一般單字測驗 (保持不變)
     function startQuiz(mode) {
         let list = [...database[mode]];
         if (isRandom) {
@@ -122,15 +258,15 @@
         nextQuestion();
     }
 
-    // 返回首頁
+    // 返回首頁 (修正：支援從自選測驗退回首頁)
     function goHome(event) {
-        event.stopPropagation(); // 防止觸發螢幕點擊事件
+        event.stopPropagation();
         homeScreen.classList.add('active');
         quizScreen.classList.remove('active');
         inputEl.blur();
     }
 
-    // 下一題
+    // 下一題 (保持不變)
     function nextQuestion() {
         if (currentIdx >= currentQuizList.length) {
             alert("練習結束！");
@@ -148,7 +284,7 @@
         setTimeout(() => inputEl.focus(), 100);
     }
 
-    // 處理輸入
+    // 處理輸入 (保持不變)
     inputEl.addEventListener('input', (e) => {
         if (isWaiting) return;
         const val = e.target.value.toLowerCase();
@@ -173,7 +309,7 @@
         }
     });
 
-    // 螢幕點擊邏輯
+    // 螢幕點擊邏輯 (保持不變)
     function handleScreenClick() {
         if (isWaiting) {
             currentIdx++;
