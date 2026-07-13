@@ -82,6 +82,20 @@
         }
         .checkbox-btn.checked { border-color: var(--accent); color: var(--accent); background: #002200; }
         .action-btn { background: var(--accent); color: #000; border: none; font-weight: bold; margin-top: 5px; }
+   
+   /* 新增：底部廣告欄位樣式 */
+        .adsense-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8); /* 加上微透黑色背景，確保廣告不會與後方文字打架 */
+            padding: 5px 0;
+        }
+        /* 為了不讓底部廣告擋住測驗畫面的「提示文字」，將提示文字稍微往上推 */
+        .hint-text { bottom: 110px !important; } 
     </style>
 </head>
 <body>
