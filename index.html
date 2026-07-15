@@ -80,34 +80,36 @@
         
         .action-btn { background: var(--accent); color: #000; border: none; font-weight: bold; margin-top: 5px; }
 
-/* 統一底部區塊的外層容器 */
-        .footer-area {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            z-index: 999999 !important; 
-            background: rgba(0, 0, 0, 0.9);
-            pointer-events: auto !important; 
-            /* 移除額外的 padding 或固定高度，讓內容自然堆疊 */
-        }
+/* 修正底部的贊助與廣告區塊容器 */
+.footer-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 6px 12px;         /* 🛑 降低上下 padding（原本可能過大），縮小佔用高度 */
+    background-color: #0d0d0d;  /* 保持與背景色一致 */
+    box-sizing: border-box;
+    z-index: 999;
+}
 
-        /* 底部支持文字（緊貼廣告上方） */
-        .support-text {
-            width: 100%;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #FFDD00; 
-            padding: 8px 0 2px 0; /* 縮減上下間距，讓它往下沉 */
-            letter-spacing: 0.5px;
-            pointer-events: auto !important;
-        }
-        .support-text a {
-            color: #FFDD00 !important;
-            text-decoration: underline !important;
-            font-weight: bold;
-            pointer-events: auto !important;
-        }
+/* 針對這句 BuyMeACoffee 文字的獨立調整 */
+.support-text {
+    font-size: 11px;            /* 稍微縮小字體，降低視覺突兀感 */
+    color: #888888;             /* 使用低調的灰色 */
+    margin: 2px 0 4px 0;        /* 🛑 嚴格限制上下外邊距（margin），避免把文字撐得太高 */
+    text-align: center;
+    line-height: 1.2;
+}
+
+.support-text a {
+    color: #00ffcc;             /* 霓虹綠的超連結顏色 */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.support-text a:hover {
+    text-decoration: underline;
+}
 
         /* 底部廣告欄位樣式 */
         .adsense-container {
