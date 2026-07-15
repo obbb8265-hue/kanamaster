@@ -223,16 +223,21 @@
         <div class="hint-text">答對後按 [Return / Enter] 繼續</div>
     </div>
 
-<div class="footer-area" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
-    <!-- 修正後的贊助文字 -->
+<!-- PROTECTED INTERACTION FOOTER BLOCK -->
+<div class="footer-area" 
+     onmousedown="event.stopPropagation()" 
+     onclick="event.stopPropagation()" 
+     ontouchstart="event.stopPropagation()">
+    
+    <!-- 1. 黃色高亮超連結，移至廣告欄上方，並連結至個人專屬網址 -->
     <p class="support-text">
         Enjoy the practice? Support the project at 
-        <a href="https://buymeacoffee.com/" target="_blank">buymeacoffee.com</a>
+        <a href="https://buymeacoffee.com/oveh111" target="_blank">https://buymeacoffee.com/</a>
     </p>
     
-    <!-- 下方如果原本有擺放廣告或其它連結，也可以維持在它下方 -->
-    <div class="mock-ad-space" style="font-size: 10px; color: #444; text-align: center;">
-        <!-- 廣告/其他佔位 -->
+    <!-- 2. 廣告欄此時位於最下方 -->
+    <div class="mock-ad-space">
+        Sponsored Advertisement Box
     </div>
 </div>
 
