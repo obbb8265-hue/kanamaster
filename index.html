@@ -80,24 +80,25 @@
         
         .action-btn { background: var(--accent); color: #000; border: none; font-weight: bold; margin-top: 5px; }
 
-        /* 統一底部區塊的外層容器，完全獨立於所有 screen 之外 */
+/* 統一底部區塊的外層容器 */
         .footer-area {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            z-index: 999999 !important; /* 確保在所有人最上面 */
+            z-index: 999999 !important; 
             background: rgba(0, 0, 0, 0.9);
-            pointer-events: auto !important; /* 確保點擊事件正常 */
+            pointer-events: auto !important; 
+            /* 移除額外的 padding 或固定高度，讓內容自然堆疊 */
         }
 
-        /* 底部支持文字樣式 */
+        /* 底部支持文字（緊貼廣告上方） */
         .support-text {
             width: 100%;
             text-align: center;
             font-size: 0.8rem;
             color: #FFDD00; 
-            padding: 10px 0;
+            padding: 8px 0 2px 0; /* 縮減上下間距，讓它往下沉 */
             letter-spacing: 0.5px;
             pointer-events: auto !important;
         }
@@ -111,7 +112,7 @@
         /* 底部廣告欄位樣式 */
         .adsense-container {
             width: 100%;
-            height: 100px;
+            height: 95px; /* 微調高度，讓整體結構更緊湊 */
             text-align: center;
             box-sizing: border-box;
             padding-top: 5px;
